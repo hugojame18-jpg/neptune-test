@@ -34,9 +34,9 @@ function redirigerAffilie(prix, infos) {
   window.location.href = lienAffilie(prix, infos);
 }
 
-// Pays livrés (pas la France ni la Belgique) : code envoyé en sub16, indicatif téléphone
+// Pays livrés : code envoyé en sub16, indicatif téléphone
 const PAYS = [
-  ["CH", "Suisse", "+41"], ["LU", "Luxembourg", "+352"], ["DE", "Allemagne", "+49"], ["AT", "Autriche", "+43"],
+  ["FR", "France", "+33"], ["CH", "Suisse", "+41"], ["LU", "Luxembourg", "+352"], ["DE", "Allemagne", "+49"], ["AT", "Autriche", "+43"],
   ["NL", "Pays-Bas", "+31"], ["ES", "Espagne", "+34"], ["PT", "Portugal", "+351"], ["IT", "Italie", "+39"],
   ["IE", "Irlande", "+353"], ["GB", "Royaume-Uni", "+44"],
 ];
