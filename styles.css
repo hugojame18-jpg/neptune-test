@@ -436,7 +436,8 @@ body.locked { overflow: hidden; }
   .trust-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .why, .tab-panel, .newsletter, .pdp, .pro-grid { grid-template-columns: 1fr; gap: 36px; }
-  .pdp-media { position: static; }
+  /* relative (et non static) : la photo est en absolute, sinon elle sort du cadre et recouvre la fiche */
+  .pdp-media { position: relative; }
   .slide-visual svg { height: 340px; }
   .slide-visual .ring { width: 420px; height: 420px; } .slide-visual .ring.r2 { width: 520px; height: 520px; }
 }
@@ -655,4 +656,38 @@ body.locked { overflow: hidden; }
   .ship { grid-template-columns: 1fr; gap: 18px; }
   .ship-recap { position: static; order: -1; }
   .ship-form, .ship-recap { padding: 20px; }
+}
+
+/* ---------- Téléphone : photos dans leur cadre, grilles compactes ---------- */
+.about-visual .photo { position: absolute; inset: 0; margin: auto; width: 100%; height: 78%; object-fit: contain; }
+@media (max-width: 640px) {
+  /* Produits : 2 par ligne */
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .card { border-radius: 14px; }
+  .card-media { aspect-ratio: 1; }
+  .card-media .photo { height: 84%; }
+  .badge { top: 8px; left: 8px; padding: 4px 8px; font-size: 10.5px; }
+  .badge-offre { top: auto; bottom: 6px; right: 6px; left: 6px; justify-content: center; padding: 4px 6px; font-size: 10px; }
+  .badge-offre svg { width: 11px; height: 11px; }
+  .swatches { padding: 8px 10px 0; gap: 4px; }
+  .swatch, .swatch-more { width: 28px; height: 28px; border-radius: 7px; padding: 2px; }
+  .swatches .swatch:nth-child(n+5) { display: none; }
+  .card-body { padding: 10px 12px 12px; }
+  .card-cat { font-size: 10px; margin-bottom: 3px; }
+  .card-title { font-size: 15px; line-height: 1.2; }
+  .card-variant { font-size: 11.5px; margin: -2px 0 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-desc, .card .chips { display: none; }
+  .card-foot { flex-direction: column; align-items: stretch; gap: 8px; }
+  .card .price { font-size: 18px; }
+  .card-foot .btn { width: 100%; justify-content: center; padding: 10px 12px; }
+  /* Gammes : 2 par ligne, image plus petite */
+  .cat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .cat-tile { min-height: 0; padding: 16px 12px 0; border-radius: 14px; }
+  .cat-tile h3 { font-size: 16px; }
+  .cat-tile p { display: none; }
+  .cat-tile .more { font-size: 12.5px; }
+  .cat-tile .art { height: 120px; }
+  /* Fiche produit */
+  .pdp { gap: 24px; }
+  .pdp-media { border-radius: 20px; }
 }
