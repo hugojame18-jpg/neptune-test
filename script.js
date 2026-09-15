@@ -23,13 +23,23 @@ const A_CONFIRMER = "À confirmer";
 const AFFILIATE_URL_999 = "https://t.trklinkx.com/click?pid=4784&offer_id=13179&sub3=PULU";
 const AFFILIATE_URL_2 = "https://t.trklinkx.com/click?pid=4784&offer_id=10936&sub3=PULU2";
 
-function lienAffilie(prix) {
-  return Number(prix) === 2 ? AFFILIATE_URL_2 : AFFILIATE_URL_999;
+// infos : sub ID ajoutés au lien (ex. { sub9: "Marie", sub11: "marie@mail.com" })
+function lienAffilie(prix, infos = {}) {
+  const url = new URL(Number(prix) === 2 ? AFFILIATE_URL_2 : AFFILIATE_URL_999);
+  Object.entries(infos).forEach(([k, v]) => { if (v) url.searchParams.set(k, v); });
+  return url.toString();
 }
 
-function redirigerAffilie(prix) {
-  window.location.href = lienAffilie(prix);
+function redirigerAffilie(prix, infos) {
+  window.location.href = lienAffilie(prix, infos);
 }
+
+// Pays livrés (pas la France ni la Belgique) : code envoyé en sub16, indicatif téléphone
+const PAYS = [
+  ["CH", "Suisse", "+41"], ["LU", "Luxembourg", "+352"], ["DE", "Allemagne", "+49"], ["AT", "Autriche", "+43"],
+  ["NL", "Pays-Bas", "+31"], ["ES", "Espagne", "+34"], ["PT", "Portugal", "+351"], ["IT", "Italie", "+39"],
+  ["IE", "Irlande", "+353"], ["GB", "Royaume-Uni", "+44"],
+];
 // Fiche technique commune : à compléter produit par produit avec les données JNR.
 const specsDeBase = (extra = {}) => ({ "Nombre de bouffées": A_CONFIRMER, "Nicotine": A_CONFIRMER, "Contenance": A_CONFIRMER, "Batterie": A_CONFIRMER, ...extra });
 
@@ -618,7 +628,9 @@ function ajouterAuPanier(id, choix = {}) {
   sauverPanier();
   toast(p.puff && calculOffre().aChoisir ? `${p.nom} ajouté : choisis ta 2e puff, elle est offerte !` : `${p.nom} ajouté au panier`);
 }
-function sauverPanier() { store.set("nebule-panier", panier); renderPanier(); }
+function sauverPanier() { store.set("nebule-panier", panier); renderPanier(); document.dispatchEvent(new Event("panier")); }
+// Un seul lien possible : 9,99 € dès qu'un article à 9,99 € est dans le panier, sinon 2 €
+const prixPanier = () => (panier.some((l) => produit(l.id)?.prix !== 2) ? 9.99 : 2);
 
 function renderPanier() {
   const n = panier.reduce((s, l) => s + l.qte, 0);
@@ -652,8 +664,7 @@ function renderPanier() {
     <div class="total"><span>Total</span><span>${euro(total)}</span></div>
     <small>Frais de livraison calculés à l'étape suivante. Vérification de l'âge à la commande.</small>
     <button class="btn" id="checkout">Passer commande</button>`;
-  // Panier avec au moins un article à 9,99 € → lien 9,99 €, sinon lien 2 €
-  $("#checkout").addEventListener("click", () => redirigerAffilie(panier.some((l) => produit(l.id)?.prix !== 2) ? 9.99 : 2));
+  $("#checkout").addEventListener("click", () => { location.href = "livraison.html"; });
 }
 
 function choisirPastille(sw) {
@@ -685,16 +696,12 @@ function initPanier() {
   });
   document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-add]");
-  if (b) {
+    if (!b) return;
     e.preventDefault();
-
-    const p = produit(b.dataset.add);
-
-    if (p) {
-      redirigerAffilie(p.prix);
-    }
-  }
-});
+    if (!produit(b.dataset.add)) return;
+    ajouterAuPanier(b.dataset.add, { variante: b.dataset.v });
+    volVersPanier($(".card-media .photo, .card-media svg", b.closest(".card") || document.body));
+  });
   renderPanier();
 }
 
@@ -970,7 +977,11 @@ function initFiche() {
   const maj = () => { $("#q-val").textContent = choix.qte; };
   $("#q-moins").addEventListener("click", () => { choix.qte = Math.max(1, choix.qte - 1); maj(); });
   $("#q-plus").addEventListener("click", () => { choix.qte = Math.min(20, choix.qte + 1); maj(); });
-  const acheter = () => redirigerAffilie(p.prix);
+  const acheter = () => {
+    ajouterAuPanier(p.id, choix);
+    volVersPanier($("#pdp-media .photo, #pdp-media svg"));
+    setTimeout(() => document.body.classList.add("drawer-open"), 650);
+  };
   $("#ajout").addEventListener("click", acheter);
 
   // Barre d'achat collante (mobile) quand le bouton principal sort de l'écran
@@ -995,6 +1006,108 @@ function initFiche() {
   media.addEventListener("pointerleave", () => media.classList.remove("zoom"));
 
   $("#similaires").innerHTML = PRODUITS.filter((x) => x.cat === p.cat && x.id !== p.id).concat(PRODUITS.filter((x) => x.cat !== p.cat && x.phare)).slice(0, 3).map(carteProduit).join("");
+}
+
+/* ---------- Page livraison : infos client envoyées en sub ID vers la page de paiement ---------- */
+function initLivraison() {
+  const zone = $("#livraison");
+  const CHAMPS = [
+    // [name, sub ID, libellé, attributs de l'input]
+    ["prenom", "sub9", "Prénom", 'autocomplete="given-name" autocapitalize="words"'],
+    ["nom", "sub10", "Nom", 'autocomplete="family-name" autocapitalize="words"'],
+    ["email", "sub11", "Email", 'type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"'],
+    ["mobile", "sub12", "Téléphone mobile", 'type="tel" inputmode="tel" autocomplete="tel-national"'],
+    ["adresse", "sub13", "Adresse", 'autocomplete="address-line1"'],
+    ["cp", "sub14", "Code postal", 'autocomplete="postal-code" autocapitalize="characters"'],
+    ["ville", "sub15", "Ville", 'autocomplete="address-level2" autocapitalize="words"'],
+  ];
+  const saisie = store.get("nebule-livraison", {});
+  const region = (navigator.language || "").split("-")[1]?.toUpperCase();
+  const paysDefaut = PAYS.find((x) => x[0] === saisie.pays) || PAYS.find((x) => x[0] === region) || PAYS[0];
+
+  const recap = () => {
+    const box = $("#recap"); if (!box) return;
+    if (!panier.length) { rendre(); return; }
+    const offre = calculOffre();
+    const sousTotal = panier.reduce((s, l) => s + produit(l.id).prix * l.qte, 0);
+    const n = panier.reduce((s, l) => s + l.qte, 0);
+    box.innerHTML = `<h2>Ta commande <small>${n} article${n > 1 ? "s" : ""}</small></h2>
+      ${panier.map((l) => { const p = produit(l.id); return `<div class="line">
+        <div class="line-media">${artProduit(p, l.variante)}<span class="recap-qte">${l.qte}</span></div>
+        <div><div class="line-title">${esc(p.nom)}</div><div class="line-opt">${esc(l.variante || "")}</div></div>
+        <div class="line-price">${euro(p.prix * l.qte)}</div></div>`; }).join("")}
+      ${offre.remise ? `<div class="sous-total" style="margin-top:14px"><span>Sous-total</span><span>${euro(sousTotal)}</span></div>
+      <div class="sous-total remise"><span>1 achetée = 1 offerte</span><span>−${euro(offre.remise)}</span></div>` : ""}
+      <div class="total" style="margin-top:14px"><span>Total</span><span>${euro(sousTotal - offre.remise)}</span></div>
+      <small class="muted">Livraison calculée à l'étape du paiement.</small>`;
+  };
+
+  const champ = ([name, , label, attrs]) => `<div class="field" data-f="${name}">
+    <label for="f-${name}">${label}</label>
+    ${name === "mobile"
+      ? `<div class="tel"><select id="f-indicatif" aria-label="Indicatif">${PAYS.map((x) => `<option value="${x[2]}">${x[0]} ${x[2]}</option>`).join("")}</select>
+         <input id="f-${name}" name="${name}" ${attrs} required value="${esc(saisie[name] || "")}" placeholder="6 12 34 56 78"></div>`
+      : `<input id="f-${name}" name="${name}" ${attrs} required value="${esc(saisie[name] || "")}">`}
+    <small class="err" hidden></small></div>`;
+  const [prenom, nom, email, mobile, adresse, cp, ville] = CHAMPS.map(champ);
+
+  function rendre() {
+    if (!panier.length) {
+      zone.innerHTML = `<div class="drawer-empty"><h2>Ton panier est vide</h2><p>Ajoute un produit pour passer à la livraison.</p><a class="btn" href="produits.html">Voir les produits</a></div>`;
+      return;
+    }
+    zone.innerHTML = `<div class="ship">
+      <form class="ship-form" id="ship-form" novalidate>
+        <h1>Livraison</h1>
+        <p class="muted">Où doit-on t'envoyer ta commande ? Plus qu'une étape avant le paiement.</p>
+        <div class="ship-2">${prenom}${nom}</div>
+        ${email}${mobile}${adresse}
+        <div class="ship-2">${cp}${ville}</div>
+        <div class="field"><label for="f-pays">Pays</label>
+          <select id="f-pays" name="pays" autocomplete="country">${PAYS.map((x) => `<option value="${x[0]}">${x[1]}</option>`).join("")}</select></div>
+        <button class="btn" type="submit" id="ship-go">Continuer vers le paiement ${ICO.arrowR.replace("<svg", '<svg width="18" height="18"')}</button>
+        <div class="ship-trust">${ICO.lock}<span>Paiement sécurisé à l'étape suivante · tes infos sont déjà remplies</span></div>
+      </form>
+      <aside class="ship-recap" id="recap"></aside>
+    </div>`;
+    recap();
+
+    const f = $("#ship-form"), selPays = $("#f-pays"), selInd = $("#f-indicatif");
+    selPays.value = paysDefaut[0];
+    selInd.value = saisie.indicatif || paysDefaut[2];
+    const sauver = () => store.set("nebule-livraison", { ...Object.fromEntries(new FormData(f)), indicatif: selInd.value });
+    selPays.addEventListener("change", () => { selInd.value = PAYS.find((x) => x[0] === selPays.value)[2]; sauver(); });
+    f.addEventListener("input", (e) => { const b = e.target.closest(".field.bad"); if (b) { b.classList.remove("bad"); $(".err", b).hidden = true; } sauver(); });
+
+    // Numéro au format international : +41791234567
+    const telInter = (brut) => {
+      const t = brut.trim(), chiffres = t.replace(/\D/g, "");
+      if (t.startsWith("+")) return "+" + chiffres;
+      if (chiffres.startsWith("00")) return "+" + chiffres.slice(2);
+      return selInd.value + chiffres.replace(/^0+/, "");
+    };
+    const erreur = (name, msg) => { const b = $(`[data-f="${name}"]`, f); b.classList.add("bad"); const e = $(".err", b); e.textContent = msg; e.hidden = false; return b; };
+
+    f.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const d = Object.fromEntries([...new FormData(f)].map(([k, v]) => [k, String(v).trim()]));
+      const fautes = [];
+      CHAMPS.forEach(([name]) => { if (!d[name]) fautes.push(erreur(name, "Champ obligatoire")); });
+      if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(d.email)) fautes.push(erreur("email", "Email invalide"));
+      const nbChiffres = d.mobile.replace(/\D/g, "").length;
+      if (d.mobile && (nbChiffres < 6 || nbChiffres > 15)) fautes.push(erreur("mobile", "Numéro invalide"));
+      if (fautes.length) { fautes[0].querySelector("input").focus(); return; }
+
+      const infos = Object.fromEntries(CHAMPS.map(([name, sub]) => [sub, d[name]]));
+      infos.sub12 = telInter(d.mobile);
+      infos.sub16 = d.pays;
+      const go = $("#ship-go"); go.disabled = true; go.textContent = "Redirection vers le paiement…";
+      redirigerAffilie(prixPanier(), infos);
+    });
+  }
+  rendre();
+  // Le panier peut changer depuis le tiroir : on met le récap à jour
+  document.addEventListener("panier", recap);
 }
 
 /* ---------- Formulaire pro ---------- */
@@ -1148,5 +1261,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (page === "produits") initCatalogue();
   if (page === "fiche") initFiche();
   if (page === "pro") initPro();
+  if (page === "livraison") initLivraison();
   const faqMail = $("#faq-mail"); if (faqMail) faqMail.href = `mailto:${EMAIL_CONTACT}`;
 });
