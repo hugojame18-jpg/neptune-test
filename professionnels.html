@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Espace professionnels | Nébule</title>
+  <meta name="description" content="Tarifs professionnels pour buralistes, boutiques spécialisées et revendeurs.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="pro">
+  <div id="header"></div>
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <div class="crumbs"><a href="index.html">Accueil</a> / Professionnels</div>
+        <h1>Espace professionnels</h1>
+        <p>Commerçants, boutiques spécialisées, revendeurs : accédez à nos tarifs dédiés sur la gamme JNR.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap pro-grid">
+        <div>
+          <h2>Travailler avec Nébule</h2>
+          <p>Nous fournissons les professionnels avec toute la gamme JNR : Lion King, Falcon, Mega Box Pro, Blazt et Bykux. Livraison uniquement dans les pays où la vente de puffs jetables est autorisée.</p>
+          <div class="feature-grid">
+            <div class="feature"><h3>Tarifs dégressifs</h3><p>Prix adaptés au volume, dès la première commande.</p></div>
+            <div class="feature"><h3>Toutes les variantes</h3><p>Saveurs et finitions disponibles à l'unité ou en carton.</p></div>
+            <div class="feature"><h3>Produits authentiques</h3><p>Approvisionnement auprès de la marque JNR.</p></div>
+            <div class="feature"><h3>Accompagnement</h3><p>Visuels produits et fiches techniques pour votre point de vente.</p></div>
+          </div>
+          <div class="legal-note">L'ouverture d'un compte professionnel est réservée aux entreprises immatriculées et autorisées à vendre des produits du vapotage dans leur pays. Un justificatif pourra être demandé.</div>
+        </div>
+
+        <form class="form" id="pro-form">
+          <h2 style="font-size:24px">Demande de tarifs</h2>
+          <div class="row">
+            <div class="field"><label for="f-nom">Nom et prénom</label><input id="f-nom" name="Nom" required autocomplete="name"></div>
+            <div class="field"><label for="f-soc">Société</label><input id="f-soc" name="Société" required autocomplete="organization"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="f-mail">E-mail</label><input id="f-mail" type="email" name="E-mail" required autocomplete="email"></div>
+            <div class="field"><label for="f-tel">Téléphone</label><input id="f-tel" type="tel" name="Téléphone" autocomplete="tel"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="f-siret">N° d'immatriculation</label><input id="f-siret" name="Immatriculation" required></div>
+            <div class="field"><label for="f-type">Type d'activité</label>
+              <select id="f-type" name="Activité"><option>Bureau de tabac</option><option>Épicerie / supérette</option><option>Boutique spécialisée</option><option>Revendeur / grossiste</option><option>Autre</option></select></div>
+          </div>
+          <div class="field"><label for="f-pays">Pays</label><input id="f-pays" name="Pays" required autocomplete="country-name"></div>
+          <div class="field"><label for="f-msg">Votre besoin</label><textarea id="f-msg" name="Message" placeholder="Produits qui vous intéressent, volumes estimés…"></textarea></div>
+          <button class="btn" type="submit">Envoyer la demande</button>
+          <p class="form-msg" id="pro-msg" role="status"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+  <div id="footer"></div>
+  <script src="script.js"></script>
+</body>
+</html>

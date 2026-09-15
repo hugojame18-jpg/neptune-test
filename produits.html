@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Produits | Nébule</title>
+  <meta name="description" content="Cigarettes électroniques JNR et e-liquides.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="produits">
+  <div id="header"></div>
+  <main>
+    <section class="page-hero">
+      <div class="wrap">
+        <div class="crumbs"><a href="index.html">Accueil</a> / Produits</div>
+        <h1 id="titre-cat">Tous nos produits</h1>
+        <p id="desc-cat"></p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="wrap">
+        <div class="toolbar">
+          <label class="toolbar-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="search" id="q" placeholder="Rechercher un modèle ou un goût…" aria-label="Rechercher dans le catalogue">
+          </label>
+          <select id="tri" aria-label="Trier">
+            <option value="pertinence">Pertinence</option>
+            <option value="prix-asc">Prix croissant</option>
+            <option value="prix-desc">Prix décroissant</option>
+            <option value="nom">Nom A → Z</option>
+          </select>
+        </div>
+        <div class="filters" id="filtres"></div>
+        <p class="result-count" id="compte"></p>
+        <div class="product-grid" id="grille"></div>
+      </div>
+    </section>
+  </main>
+  <div id="footer"></div>
+  <script src="script.js"></script>
+</body>
+</html>
